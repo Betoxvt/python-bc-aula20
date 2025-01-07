@@ -1,4 +1,4 @@
-from pydantic import BaseModel, PositiveFloat, EmailStr, field_validator, Field
+from pydantic import BaseModel, PositiveFloat, EmailStr, field_validator
 from enum import Enum
 from datetime import datetime
 from typing import Optional
