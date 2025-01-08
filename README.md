@@ -355,3 +355,38 @@ def update_product_route(
 3. **Validação**: Os dados de entrada e saída são validados pelos esquemas Pydantic.
 4. **Erros HTTP**: Lança exceções apropriadas (ex.: 404 para produto não encontrado).
 5. **API RESTful**: As rotas seguem as convenções REST, facilitando o uso em integrações ou aplicativos frontend.
+
+---
+
+### main.py
+
+Este script é o ponto de entrada principal da aplicação em FastAPI. Ele inicializa o framework, configura o banco de dados e registra as rotas.
+
+#### 1. **Importações**
+- **FastAPI**: Framework utilizado para construir a API.
+- **engine**: Instância do mecanismo de banco de dados criada em `database.py`.
+- **models**: Modelos declarativos do SQLAlchemy definidos em `models.py`.
+- **router**: Conjunto de rotas definidas em `router.py`.
+
+#### 2. **Criação do Banco de Dados**
+```python
+models.Base.metadata.create_all(bind=engine)
+```
+- **Descrição**: Gera as tabelas no banco de dados com base nos modelos definidos, caso elas ainda não existam.
+
+#### 3. **Inicialização do FastAPI**
+```python
+app = FastAPI()
+```
+- **Descrição**: Cria uma instância da aplicação FastAPI para gerenciar as requisições.
+
+#### 4. **Registro de Rotas**
+```python
+app.include_router(router)
+```
+- **Descrição**: Inclui o conjunto de rotas definidas em `router.py` na aplicação.
+
+#### **Resumindo**
+- **Inicializa o framework FastAPI.**
+- **Cria o esquema do banco de dados se necessário.**
+- **Configura as rotas da aplicação para interação com os endpoints.**
