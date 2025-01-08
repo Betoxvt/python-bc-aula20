@@ -19,7 +19,7 @@ COPY . /app
 WORKDIR /app
 
 # Instalar as dependências do projeto
-RUN uv sync --frozen
+RUN uv pip install -r requirements.txt --system
 
 # Comando para executar a aplicação
 CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
