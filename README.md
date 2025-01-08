@@ -210,13 +210,53 @@ Este módulo implementa as operações básicas de CRUD (Create, Read, Update, D
 
 **Funções Disponíveis**
 
-- get_product: Retorna um produto específico pelo id.
-- get_products: Retorna todos os produtos cadastrados.
-- create_product: Insere um novo produto no banco de dados.
-- delete_product: Remove um produto pelo id.
-- update_product: Atualiza os dados de um produto específico pelo id.
-
 Essas funções recebem uma instância do banco (Session) e utilizam os esquemas e modelos definidos no projeto para validar e persistir os dados.
+
+#### 1. `get_product`
+
+- **Propósito**: Recuperar um único produto pelo id.
+- **Como funciona**:
+    - Faz uma consulta no banco (`db.query`) buscando um registro na tabela `ProductModel` onde o campo `id` corresponde ao `product_id` informado.
+    - Retorna o primeiro resultado encontrado ou `None` caso o `id` não exista.
+- **Destaque**: Ideal para buscar detalhes de um produto específico.
+
+#### 2. `get_products`
+
+- **Propósito**: Recuperar todos os produtos do banco de dados.
+- **Como funciona**:
+    - Faz uma consulta completa na tabela `ProductModel` usando `.all()`, retornando uma lista com todos os registros.
+- **Destaque**: Útil para exibir um catálogo completo ou listar produtos em uma API.
+
+#### 3. `create_product`
+
+- **Propósito**: Inserir um novo produto no banco de dados.
+- **Como funciona**:
+    1. Recebe um objeto do tipo `ProductCreate` com os dados do produto.
+    2. Usa `**product.model_dump()` para transformar os dados do esquema em argumentos para o modelo ORM.
+    3. Adiciona o novo objeto (`db.add`) à sessão do banco e confirma a transação com db.commit.
+    4. Usa `db.refresh` para sincronizar o objeto criado com os dados gerados pelo banco (como o `id`).
+    5. Retorna o produto criado.
+- **Destaque**: Automação completa para criar novos registros, incluindo validação de dados pelo esquema.
+
+#### 4. `delete_product`
+
+- **Propósito**: Remover um produto pelo `id`.
+- **Como funciona**:
+    1. Busca o produto no banco com o `product_id` usando `db.query`.
+    2. Se o produto for encontrado, o remove com `db.delete` e confirma a transação com `db.commit`.
+    3. Retorna o produto removido ou `None` se o `id` não existir.
+- **Destaque**: Remove o produto do banco, garantindo que as mudanças sejam permanentes após o `commit`.
+
+#### 5. `update_product`
+
+- **Propósito**: Atualizar os dados de um produto existente.
+- **Como funciona**:
+    1. Busca o produto no banco pelo `id` usando `db.query`.
+    2. Se o produto não for encontrado, retorna `None`.
+    3. Atualiza apenas os campos fornecidos no objeto `ProductUpdate` (campos opcionais).
+    4. Salva as mudanças com `db.commit` e atualiza o objeto em memória com `db.refresh`.
+    5. Retorna o produto atualizado.
+- **Destaque**: Suporta atualizações parciais, permitindo modificar apenas os campos necessários.
 
 ---
 
