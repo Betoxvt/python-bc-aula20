@@ -4,7 +4,7 @@ from database import Base
 
 
 class ProductModel(Base):
-    __tablename__ = "products"  # esse será o nome da tabela
+    __tablename__ = "products"  # Esse será o nome da tabela
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
