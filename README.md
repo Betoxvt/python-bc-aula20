@@ -350,7 +350,7 @@ def update_product_route(
 - **Descrição**: Atualiza as informações de um produto existente.
 
 #### **Resumindo**
-1. **Organização**: As rotas estão encapsuladas em um `APIRouter` para modularidade e reutilização.
+1. **Organização**: As rotas estão encapsuladas em `router.py` para modularidade e reutilização.
 2. **Integração CRUD**: Cada rota utiliza uma função CRUD para interagir com o banco de dados.
 3. **Validação**: Os dados de entrada e saída são validados pelos esquemas Pydantic.
 4. **Erros HTTP**: Lança exceções apropriadas (ex.: 404 para produto não encontrado).
