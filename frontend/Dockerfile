@@ -19,7 +19,7 @@ COPY . /app
 WORKDIR /app
 
 # Instalar as dependências do projeto
-RUN uv pip sync requirements.txt
+RUN uv pip install -r requirements.txt --system
 
 # Comando para executar a aplicação
 CMD ["uv", "run", "streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
