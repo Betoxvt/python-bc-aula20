@@ -15,7 +15,9 @@ Esse script configura a conexão e os recursos básicos para interagir com um ba
 
 #### 1. Configuração da URL do Banco de Dados
 
-`SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgres/mydatabase"`
+```python
+SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgres/mydatabase"
+```
 
 **Propósito**: Define a URL de conexão com o banco de dados PostgreSQL.
 
@@ -28,7 +30,9 @@ Esse script configura a conexão e os recursos básicos para interagir com um ba
 
 #### 2. Criação do Motor de Conexão
 
-`engine = create_engine(SQLALCHEMY_DATABASE_URL)`
+```python
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+```
 
 **Propósito**: Cria o "motor" (engine), que gerencia a conexão com o banco de dados.
 
@@ -39,7 +43,9 @@ Esse script configura a conexão e os recursos básicos para interagir com um ba
 
 #### 3. Configuração da Sessão de Banco de Dados
 
-`SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)`
+```python
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+```
 
 **Propósito**: Configura sessões para interagir com o banco.
 
@@ -54,7 +60,9 @@ Esse script configura a conexão e os recursos básicos para interagir com um ba
 
 #### 4. Base para Modelos Declarativos
 
-`Base = declarative_base()`
+```python
+Base = declarative_base()
+```
 
 **Propósito**: Cria uma classe base para os modelos ORM.
 
@@ -64,7 +72,7 @@ Esse script configura a conexão e os recursos básicos para interagir com um ba
 
 #### 5. Gerenciador de Contexto para Sessões
 
-```
+```python
 def get_db():
     db = SessionLocal()
     try:
@@ -104,7 +112,7 @@ Esse script define um modelo de banco de dados usando SQLAlchemy. O modelo repre
 
 #### 2. Definição da Classe ProductModel
 
-```
+```python
 class ProductModel(Base):
     __tablename__ = "products"  # esse será o nome da tabela
 ```
@@ -118,7 +126,7 @@ class ProductModel(Base):
 
 #### 3. Definição das Colunas
 
-```
+```python
     id = Column(Integer, primary_key=True) # Define que esta coluna é a chave primária da tabela.
     name = Column(String)
     description = Column(String)
@@ -145,7 +153,7 @@ class ProductModel(Base):
 
 #### 2. Enumeração de Categorias
 
-```
+```python
 class CategoriaBase(Enum):
     ...
 ```
@@ -154,7 +162,7 @@ Define categorias fixas para produtos, garantindo consistência ao permitir apen
 
 #### 3. Modelos Pydantic
 
-```
+```python
 class ProductBase(BaseModel):
     ...
 
@@ -166,7 +174,7 @@ class ProductBase(BaseModel):
 - Valida campos básicos de produtos.
 - A validação da categoria verifica se o valor está na lista de categorias definidas pelo Enum.
 
-```
+```python
 class ProductCreate(ProductBase):
     pass
 ```
@@ -174,7 +182,7 @@ class ProductCreate(ProductBase):
 - Herda de ProductBase, validando os mesmos campos.
 - Usado para criar novos produtos.
 
-```
+```python
 class ProductResponse(ProductBase):
     ...
 
@@ -184,7 +192,7 @@ class ProductResponse(ProductBase):
 
 - Configura a conversão automática de atributos de objetos ORM.
 
-```
+```python
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     ...
@@ -262,3 +270,88 @@ Essas funções recebem uma instância do banco (Session) e utilizam os esquemas
 
 ### router.py
 
+Este script define rotas RESTful para gerenciar produtos utilizando FastAPI. As rotas interagem com o banco de dados por meio das funções CRUD previamente implementadas, retornando respostas padronizadas com validação de dados.
+
+#### **1. Rota: Criar Produto**
+```python
+@router.post("/products/", response_model=ProductResponse)
+def create_product_route(product: ProductCreate, db: Session = Depends(get_db)):
+    return create_product(db=db, product=product)
+```
+- **Método HTTP**: `POST`
+- **URL**: `/products/`
+- **Entrada**:
+  - Objeto `ProductCreate` (nome, descrição, preço, categoria, e-mail do fornecedor).
+- **Saída**: Retorna o produto criado no formato do esquema `ProductResponse`.
+- **Descrição**: Insere um novo produto no banco de dados.
+
+#### **2. Rota: Listar Todos os Produtos**
+```python
+@router.get("/products/", response_model=List[ProductResponse])
+def read_all_products_route(db: Session = Depends(get_db)):
+    products = get_products(db)
+    return products
+```
+- **Método HTTP**: `GET`
+- **URL**: `/products/`
+- **Entrada**: Nenhuma.
+- **Saída**: Retorna uma lista de todos os produtos cadastrados.
+- **Descrição**: Recupera todos os registros da tabela de produtos.
+
+#### **3. Rota: Buscar Produto pelo ID**
+```python
+@router.get("/products/{product_id}", response_model=ProductResponse)
+def read_product_route(product_id: int, db: Session = Depends(get_db)):
+    db_product = get_product(db, product_id=product_id)
+    if db_product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return db_product
+```
+- **Método HTTP**: `GET`
+- **URL**: `/products/{product_id}`
+- **Entrada**:
+  - `product_id`: ID do produto a ser buscado.
+- **Saída**: Retorna o produto correspondente ou um erro 404 se não encontrado.
+- **Descrição**: Busca e retorna os detalhes de um produto específico.
+
+#### **4. Rota: Deletar Produto**
+```python
+@router.delete("/products/{product_id}", response_model=ProductResponse)
+def detele_product_route(product_id: int, db: Session = Depends(get_db)):
+    db_product = delete_product(db, product_id=product_id)
+    if db_product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return db_product
+```
+- **Método HTTP**: `DELETE`
+- **URL**: `/products/{product_id}`
+- **Entrada**:
+  - `product_id`: ID do produto a ser deletado.
+- **Saída**: Retorna o produto removido ou um erro 404 se não encontrado.
+- **Descrição**: Remove o produto identificado pelo `id` do banco de dados.
+
+#### **5. Rota: Atualizar Produto**
+```python
+@router.put("/products/{product_id}", response_model=ProductResponse)
+def update_product_route(
+    product_id: int, product: ProductUpdate, db: Session = Depends(get_db)
+):
+    db_product = update_product(db, product_id=product_id, product=product)
+    if db_product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return db_product
+```
+- **Método HTTP**: `PUT`
+- **URL**: `/products/{product_id}`
+- **Entrada**:
+  - `product_id`: ID do produto a ser atualizado.
+  - Objeto `ProductUpdate` com os campos a serem modificados.
+- **Saída**: Retorna o produto atualizado ou um erro 404 se não encontrado.
+- **Descrição**: Atualiza as informações de um produto existente.
+
+#### **Resumindo**
+1. **Organização**: As rotas estão encapsuladas em um `APIRouter` para modularidade e reutilização.
+2. **Integração CRUD**: Cada rota utiliza uma função CRUD para interagir com o banco de dados.
+3. **Validação**: Os dados de entrada e saída são validados pelos esquemas Pydantic.
+4. **Erros HTTP**: Lança exceções apropriadas (ex.: 404 para produto não encontrado).
+5. **API RESTful**: As rotas seguem as convenções REST, facilitando o uso em integrações ou aplicativos frontend.
