@@ -45,7 +45,7 @@ class ProductUpdate(BaseModel):
     categoria: Optional[str] = None
     email_fornecedor: Optional[EmailStr] = None
 
-    @field_validator("categoria", pre=True, always=True)
+    @field_validator("categoria")
     def check_categoria(cls, v):
         if v is None:
             return v
